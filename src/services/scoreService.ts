@@ -84,3 +84,20 @@ export const getScoresByJudgeAndCompetition = async (
     id: doc.id,
   })) as Score[];
 };
+
+export const subscribeScoresByCompetition = (
+  competitionId: string,
+  callback: (scores: Score[]) => void
+): Unsubscribe => {
+  const q = query(
+    collection(db, COLLECTION),
+    where('competitionId', '==', competitionId)
+  );
+  return onSnapshot(q, (snapshot) => {
+    const scores = snapshot.docs.map((doc) => ({
+      ...doc.data(),
+      id: doc.id,
+    })) as Score[];
+    callback(scores);
+  });
+};

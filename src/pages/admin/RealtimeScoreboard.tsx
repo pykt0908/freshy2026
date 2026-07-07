@@ -69,11 +69,56 @@ const RealtimeScoreboard = () => {
 
     entries.sort((a, b) => b.totalScore - a.totalScore);
 
-    const topN = currentRoundInfo?.topN ?? entries.length;
+    // Assign ranks
     entries.forEach((entry, idx) => {
       entry.rank = idx + 1;
-      entry.isAdvanced = idx < topN || entry.isManuallySelected;
     });
+
+    const topN = currentRoundInfo?.topN ?? entries.length;
+
+    // Step 1: Initialize all entries as not advanced and not tied
+    entries.forEach((entry) => {
+      entry.isAdvanced = false;
+      entry.isTied = false;
+    });
+
+    // Step 2: Handle manual selections first (they always advance)
+    let advancedCount = 0;
+    entries.forEach((entry) => {
+      if (entry.contestant.manuallySelected) {
+        entry.isAdvanced = true;
+        advancedCount++;
+      }
+    });
+
+    // Step 3: Fill remaining slots with top contestants
+    for (let i = 0; i < entries.length; i++) {
+      const entry = entries[i];
+      if (entry.isAdvanced) continue;
+
+      if (advancedCount < topN) {
+        const remainingSlots = topN - advancedCount;
+        const targetIndex = i + remainingSlots - 1;
+        
+        if (targetIndex < entries.length - 1) {
+          const boundaryScore = entries[targetIndex].totalScore;
+          const nextScore = entries[targetIndex + 1].totalScore;
+          
+          if (boundaryScore === nextScore && entry.totalScore === boundaryScore && boundaryScore > 0) {
+            const tiedEntries = entries.filter(e => e.totalScore === boundaryScore && !e.isAdvanced);
+            tiedEntries.forEach(e => {
+              e.isTied = true;
+            });
+            break;
+          }
+        }
+
+        entry.isAdvanced = true;
+        advancedCount++;
+      } else {
+        break;
+      }
+    }
 
     setScoreboard(entries);
   }, [contestants, scores, currentRoundInfo]);
@@ -100,8 +145,11 @@ const RealtimeScoreboard = () => {
           <h1 className="m-0 text-dark font-weight-bold" style={{ fontSize: '24px' }}>
             <i className="fas fa-chart-line text-primary mr-2"></i> กระดานคะแนน
           </h1>
-          <p className="text-muted text-xs mb-0 mt-1">
-            ประเภทประกวด: {selectedComp?.name} · รอบการประกวด: {currentRoundInfo?.name || `รอบที่ ${currentRound + 1}`}
+          <p className="text-muted text-xs mb-0 mt-1 d-flex align-items-center gap-1.5 flex-wrap">
+            <span>ประเภทประกวด: {selectedComp?.name} · รอบการประกวด: {currentRoundInfo?.name || `รอบที่ ${currentRound + 1}`}</span>
+            {currentRoundInfo?.status === 'pending' && (
+              <span className="badge badge-warning text-xxs font-weight-bold py-0.5 px-1.5">ยังไม่เริ่มให้คะแนน</span>
+            )}
           </p>
         </div>
         <div className="d-flex align-items-center gap-2 flex-wrap">
@@ -217,7 +265,11 @@ const RealtimeScoreboard = () => {
 
                     {/* Status */}
                     <td className="text-center align-middle">
-                      {entry.isManuallySelected ? (
+                      {currentRoundInfo?.status === 'pending' ? (
+                        <span className="text-muted font-light">—</span>
+                      ) : entry.isTied ? (
+                        <span className="badge badge-warning px-2 py-1" style={{ backgroundColor: '#fff3cd', borderColor: '#ffeeba', color: '#856404' }}><i className="fas fa-exclamation-triangle mr-1"></i> คะแนนเท่ากัน (รอตัดสิน)</span>
+                      ) : entry.isManuallySelected ? (
                         <span className="badge badge-info px-2 py-1"><i className="fas fa-hand-paper mr-1"></i> ดึงผ่านพิเศษ</span>
                       ) : entry.isAdvanced ? (
                         <span className="badge badge-success px-2 py-1"><i className="fas fa-check mr-1"></i> ผ่านเข้ารอบ</span>

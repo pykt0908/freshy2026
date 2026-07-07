@@ -68,4 +68,5 @@ export interface ScoreboardEntry {
   rank: number;
   isAdvanced: boolean;
   isManuallySelected: boolean;
+  isTied?: boolean;
 }

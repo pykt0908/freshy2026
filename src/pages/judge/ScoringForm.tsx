@@ -63,6 +63,13 @@ const ScoringForm = () => {
     ? currentRoundInfo.criteria
     : competition?.criteria || [];
 
+  useEffect(() => {
+    if (competition && currentRoundInfo && currentRoundInfo.status === 'pending') {
+      toast.error('รอบการประกวดนี้ยังไม่เปิดให้ลงคะแนน');
+      navigate(`/judge/competition/${competitionId}?round=${parsedRound}`);
+    }
+  }, [competition, currentRoundInfo, competitionId, navigate]);
+
   // Sum up score values only for active criteria
   const totalScore = activeCriteria.reduce((sum, c) => sum + (scoreValues[c.id] || 0), 0);
   const maxTotal = activeCriteria.reduce((sum, c) => sum + c.maxScore, 0);
@@ -94,7 +101,7 @@ const ScoringForm = () => {
         totalScore,
       });
       toast.success('ส่งผลคะแนนตัดสินสำเร็จ');
-      navigate(`/judge/competition/${competitionId}`);
+      navigate(`/judge/competition/${competitionId}?round=${parsedRound}`);
     } catch (err) {
       toast.error('เกิดข้อผิดพลาดในการบันทึกคะแนน');
       console.error(err);
@@ -119,7 +126,7 @@ const ScoringForm = () => {
       <div className="card-header py-4 px-4 bg-gray-50/50 border-bottom">
         <div className="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
           <button
-            onClick={() => navigate(`/judge/competition/${competitionId}`)}
+            onClick={() => navigate(`/judge/competition/${competitionId}?round=${parsedRound}`)}
             className="btn btn-default btn-sm font-weight-bold border-gray-300 shadow-xs py-1.5 px-3.5"
             style={{ cursor: 'pointer' }}
           >

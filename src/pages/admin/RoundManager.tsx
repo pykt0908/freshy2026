@@ -71,12 +71,56 @@ const RoundManager = () => {
     // Sort by total score descending
     entries.sort((a, b) => b.totalScore - a.totalScore);
 
-    // Assign ranks and determine who advances
-    const topN = currentRoundInfo?.topN ?? entries.length;
+    // Assign ranks
     entries.forEach((entry, idx) => {
       entry.rank = idx + 1;
-      entry.isAdvanced = idx < topN || entry.isManuallySelected;
     });
+
+    const topN = currentRoundInfo?.topN ?? entries.length;
+
+    // Step 1: Initialize all entries as not advanced and not tied
+    entries.forEach((entry) => {
+      entry.isAdvanced = false;
+      entry.isTied = false;
+    });
+
+    // Step 2: Handle manual selections first (they always advance)
+    let advancedCount = 0;
+    entries.forEach((entry) => {
+      if (entry.contestant.manuallySelected) {
+        entry.isAdvanced = true;
+        advancedCount++;
+      }
+    });
+
+    // Step 3: Fill remaining slots with top contestants
+    for (let i = 0; i < entries.length; i++) {
+      const entry = entries[i];
+      if (entry.isAdvanced) continue;
+
+      if (advancedCount < topN) {
+        const remainingSlots = topN - advancedCount;
+        const targetIndex = i + remainingSlots - 1;
+        
+        if (targetIndex < entries.length - 1) {
+          const boundaryScore = entries[targetIndex].totalScore;
+          const nextScore = entries[targetIndex + 1].totalScore;
+          
+          if (boundaryScore === nextScore && entry.totalScore === boundaryScore && boundaryScore > 0) {
+            const tiedEntries = entries.filter(e => e.totalScore === boundaryScore && !e.isAdvanced);
+            tiedEntries.forEach(e => {
+              e.isTied = true;
+            });
+            break;
+          }
+        }
+
+        entry.isAdvanced = true;
+        advancedCount++;
+      } else {
+        break;
+      }
+    }
 
     setScoreboard(entries);
   }, [contestants, scores, currentRoundInfo]);
@@ -85,8 +129,41 @@ const RoundManager = () => {
     buildScoreboard();
   }, [buildScoreboard]);
 
+  const handleStartScoring = async () => {
+    if (!selectedComp) return;
+    if (!confirm('ต้องการเปิดให้ลงคะแนนในรอบนี้ใช่หรือไม่? กรรมการจะสามารถเริ่มการลงคะแนนได้ทันที')) return;
+
+    const updatedRounds = [...selectedComp.rounds];
+    updatedRounds[currentRound] = { ...updatedRounds[currentRound], status: 'active' };
+
+    await updateCompetition(selectedCompId, {
+      rounds: updatedRounds,
+      status: 'active'
+    });
+    toast.success('เริ่มให้คะแนนรอบนี้เรียบร้อยแล้ว');
+  };
+
+  const handleCloseScoring = async () => {
+    if (!selectedComp) return;
+    if (!confirm('ต้องการปิดรับคะแนนในรอบนี้ใช่หรือไม่? หลังจากปิดแล้วกรรมการจะไม่สามารถส่งคะแนนเพิ่มได้')) return;
+
+    const updatedRounds = [...selectedComp.rounds];
+    updatedRounds[currentRound] = { ...updatedRounds[currentRound], status: 'completed' };
+
+    await updateCompetition(selectedCompId, {
+      rounds: updatedRounds
+    });
+    toast.success('ปิดรับคะแนนรอบนี้เรียบร้อยแล้ว');
+  };
+
   const handleAdvanceRound = async () => {
     if (!selectedComp) return;
+    const roundTies = scoreboard.filter(e => e.isTied);
+    if (roundTies.length > 0) {
+      if (!confirm(`ตรวจพบคะแนนเท่ากันบริเวณเกณฑ์การตัดตัว (${roundTies.length} คน) หากเลื่อนรอบตอนนี้ ผู้ที่คะแนนเท่ากันและไม่ได้ถูกเลือกผ่านพิเศษจะถูกคัดออกทั้งหมด ต้องการดำเนินการต่อหรือไม่?`)) {
+        return;
+      }
+    }
     if (!confirm('ต้องการประกาศผลและเลื่อนรอบการประกวดถัดไปหรือไม่? ผู้ที่ไม่ผ่านจะถูกตัดออกทันที')) return;
 
     // Eliminate contestants not in top N and not manually selected
@@ -109,7 +186,7 @@ const RoundManager = () => {
     const nextRound = currentRound + 1;
 
     if (nextRound < updatedRounds.length) {
-      updatedRounds[nextRound] = { ...updatedRounds[nextRound], status: 'active' };
+      updatedRounds[nextRound] = { ...updatedRounds[nextRound], status: 'pending' };
       await updateCompetition(selectedCompId, { rounds: updatedRounds, currentRound: nextRound });
       toast.success('เลื่อนรอบการประกวดถัดไปเรียบร้อยแล้ว');
     } else {
@@ -128,6 +205,8 @@ const RoundManager = () => {
     contestants.filter((c) => c.eliminatedAtRound === null || c.eliminatedAtRound === undefined).length * judgeCount;
   const totalScored = scores.length;
   const scorePercent = totalPossibleScores > 0 ? Math.round((totalScored / totalPossibleScores) * 100) : 0;
+  const tiedEntries = scoreboard.filter((e) => e.isTied);
+  const hasTie = tiedEntries.length > 0;
 
   return (
     <div className="space-y-4">
@@ -164,29 +243,106 @@ const RoundManager = () => {
                     className={`badge ml-2 px-2.5 py-1 ${
                       currentRoundInfo?.status === 'completed'
                         ? 'badge-primary'
-                        : 'badge-success'
+                        : currentRoundInfo?.status === 'active'
+                        ? 'badge-success'
+                        : 'badge-secondary'
                     }`}
                     style={{ fontSize: '10px' }}
                   >
-                    {currentRoundInfo?.status === 'completed'
-                      ? <span><i className="fas fa-check-circle mr-1"></i> ตัดสินเสร็จสิ้น</span>
-                      : <span><i className="fas fa-play-circle mr-1"></i> กำลังให้คะแนน</span>}
+                    {currentRoundInfo?.status === 'completed' ? (
+                      <span><i className="fas fa-check-circle mr-1"></i> ตัดสินเสร็จสิ้น</span>
+                    ) : currentRoundInfo?.status === 'active' ? (
+                      <span><i className="fas fa-play-circle mr-1"></i> กำลังให้คะแนน</span>
+                    ) : (
+                      <span><i className="fas fa-pause-circle mr-1"></i> ยังไม่เริ่มให้คะแนน</span>
+                    )}
                   </span>
                 </h4>
                 <p className="text-muted text-xs mb-0">
                   เกณฑ์ผ่านรอบปกติ: คัดกรอง Top {currentRoundInfo?.topN} คนแรก · จำนวนกรรมการคัดสิน {judgeCount} คน · ให้คะแนนแล้ว {totalScored}/{totalPossibleScores} ใบผลลัพธ์ ({scorePercent}%)
                 </p>
               </div>
-              {currentRoundInfo?.status !== 'completed' && (
+              {currentRoundInfo?.status === 'pending' && (
+                <button
+                  onClick={handleStartScoring}
+                  className="btn btn-primary btn-sm font-weight-bold shadow-sm"
+                >
+                  <i className="fas fa-play mr-1"></i> เริ่มให้คะแนนรอบนี้
+                </button>
+              )}
+              {currentRoundInfo?.status === 'active' && (
+                <button
+                  onClick={handleCloseScoring}
+                  className="btn btn-danger btn-sm font-weight-bold shadow-sm"
+                >
+                  <i className="fas fa-lock mr-1"></i> ปิดรับคะแนนรอบนี้ ({scorePercent}%)
+                </button>
+              )}
+              {currentRoundInfo?.status === 'completed' && selectedComp.status !== 'completed' && (
                 <button
                   onClick={handleAdvanceRound}
                   className="btn btn-success btn-sm font-weight-bold shadow-sm"
                 >
-                  <i className="fas fa-forward mr-1"></i> ประกาศผลและเลื่อนรอบประกวด ({scorePercent}%)
+                  <i className="fas fa-forward mr-1"></i> ประกาศผลและเลื่อนรอบประกวด
                 </button>
               )}
             </div>
+
+            {/* Judge Progress Monitor */}
+            <div className="mt-2 pt-3 border-top">
+              <span className="text-xs font-bold text-secondary d-block mb-2">
+                <i className="fas fa-gavel text-info mr-1.5"></i> ตรวจสอบสถานะการส่งคะแนนของกรรมการ ({judges.length} ท่าน)
+              </span>
+              <div className="d-flex flex-wrap gap-2">
+                {judges.map((j) => {
+                  const activeContestantsCount = contestants.filter((c) => c.eliminatedAtRound === null || c.eliminatedAtRound === undefined).length;
+                  const judgeScores = scores.filter((s) => s.judgeId === j.id);
+                  const isFinished = judgeScores.length >= activeContestantsCount && activeContestantsCount > 0;
+                  
+                  return (
+                    <div
+                      key={j.id}
+                      className="d-flex align-items-center px-3 py-1.5 border rounded shadow-xxs"
+                      style={{ 
+                        fontSize: '13px', 
+                        borderRadius: '6px',
+                        backgroundColor: isFinished ? '#e2f0d9' : '#f8f9fa',
+                        borderColor: isFinished ? '#b5e5a4' : '#e2e8f0',
+                        color: isFinished ? '#2e7d32' : '#6c757d',
+                        minWidth: '150px'
+                      }}
+                    >
+                      <i className={`fas ${isFinished ? 'fa-check-circle text-success' : 'fa-hourglass-half text-warning'} mr-2`} style={{ color: isFinished ? '#2e7d32' : '#f39c12' }}></i>
+                      <div>
+                        <strong className="d-block text-dark font-weight-bold" style={{ fontSize: '12px', lineHeight: '1.2' }}>{j.displayName}</strong>
+                        <small className="text-muted text-xxs font-weight-bold">
+                          {isFinished ? (
+                            <span className="text-success">ส่งครบแล้ว ({judgeScores.length}/{activeContestantsCount})</span>
+                          ) : (
+                            <span>ส่งแล้ว {judgeScores.length}/{activeContestantsCount} คน</span>
+                          )}
+                        </small>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
           </div>
+
+          {hasTie && (
+            <div className="alert alert-warning shadow-sm mb-3 d-flex align-items-center" style={{ gap: '12px', backgroundColor: '#fff3cd', borderColor: '#ffeeba', color: '#856404' }}>
+              <i className="fas fa-exclamation-triangle text-lg"></i>
+              <div>
+                <strong className="d-block" style={{ fontSize: '14.5px' }}>ตรวจพบคะแนนเท่ากันบริเวณเกณฑ์การตัดตัว (Tie Detected)</strong>
+                <span className="text-xs">
+                  มีผู้เข้าสมัครคะแนนเท่ากันที่อันดับคาบเกี่ยวเกณฑ์การผ่านเข้ารอบจำนวน <strong>{tiedEntries.length}</strong> คน 
+                  (หมายเลข: {tiedEntries.map(e => e.contestant.number).join(', ')})
+                  กรุณาแจ้งกรรมการเพื่อตัดสินชี้ขาด หรือกดปุ่ม <strong>"ดึงผ่านเข้ารอบ"</strong> ด้านขวาของคนที่ต้องการให้ผ่านเข้ารอบเพื่อแก้ปัญหาคะแนนเท่ากัน
+                </span>
+              </div>
+            </div>
+          )}
 
           {/* Scoreboard Table Card */}
           <div className="card card-primary card-outline shadow-sm overflow-hidden bg-white border">
@@ -219,7 +375,7 @@ const RoundManager = () => {
                   </thead>
                   <tbody>
                     {scoreboard.map((entry) => (
-                      <tr key={entry.contestant.id} className={entry.isAdvanced ? 'table-success-20' : ''}>
+                      <tr key={entry.contestant.id} className={currentRoundInfo?.status !== 'pending' && entry.isAdvanced ? 'table-success-20' : ''}>
                         {/* Rank badge */}
                         <td className="text-center align-middle font-weight-extrabold text-dark">
                           {entry.rank}
@@ -283,7 +439,11 @@ const RoundManager = () => {
 
                         {/* Status */}
                         <td className="text-center align-middle">
-                          {entry.isManuallySelected ? (
+                          {currentRoundInfo?.status === 'pending' ? (
+                            <span className="text-muted font-light">—</span>
+                          ) : entry.isTied ? (
+                            <span className="badge badge-warning px-2.5 py-1.5" style={{ backgroundColor: '#fff3cd', borderColor: '#ffeeba', color: '#856404' }}><i className="fas fa-exclamation-triangle mr-1"></i> คะแนนเท่ากัน (รอตัดสิน)</span>
+                          ) : entry.isManuallySelected ? (
                             <span className="badge badge-info px-2.5 py-1.5"><i className="fas fa-hand-paper mr-1"></i> รอบพิเศษ</span>
                           ) : entry.isAdvanced ? (
                             <span className="badge badge-success px-2.5 py-1.5"><i className="fas fa-check mr-1"></i> ผ่านเข้ารอบ</span>

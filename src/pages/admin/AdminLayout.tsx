@@ -9,6 +9,7 @@ const navItems = [
   { path: '/admin/contestants', label: 'ผู้เข้าแข่งขัน', icon: 'fas fa-users' },
   { path: '/admin/judges', label: 'กรรมการ', icon: 'fas fa-gavel' },
   { path: '/admin/rounds', label: 'จัดการรอบการประกวด', icon: 'fas fa-sync-alt' },
+  { path: '/admin/reports', label: 'รายงานคะแนนแบบละเอียด', icon: 'fas fa-file-invoice' },
   { path: '/admin/backup', label: 'สำรองและกู้คืนข้อมูล', icon: 'fas fa-database' },
 ];
 
