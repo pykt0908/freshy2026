@@ -34,7 +34,7 @@ const JudgeLayout = () => {
               className="brand-image img-circle elevation-3"
               style={{ width: '33px', height: '33px', objectFit: 'contain', backgroundColor: 'white', padding: '1px' }}
             />
-            <span className="brand-text font-weight-bold text-dark ml-2">Freshy Scoring</span>
+            <span className="brand-text font-weight-bold text-dark ml-2">S-TECH FRESHMEN AND BRAND AMBRASSADOR</span>
           </NavLink>
 
           {/* Right navbar links */}
@@ -86,7 +86,7 @@ const JudgeLayout = () => {
 
       {/* Footer */}
       <footer className="main-footer text-center text-xs py-3 px-4 border-top bg-white">
-        <strong>Copyright &copy; 2026 Freshy Scoring.</strong> All rights reserved.
+        <strong>Copyright &copy; 2026 S-TECH FRESHMEN AND BRAND AMBRASSADOR.</strong> All rights reserved.
         <div className="float-right d-none d-sm-inline-block">
           <b>AdminLTE TopNav</b> v3.2.0
         </div>

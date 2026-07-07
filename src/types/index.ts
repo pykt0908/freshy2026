@@ -1,5 +1,5 @@
 // ==========================================
-// Types for Freshy Scoring System
+// Types for S-TECH FRESHMEN AND BRAND AMBRASSADOR Scoring System
 // ==========================================
 
 export interface Competition {

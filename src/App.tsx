@@ -6,12 +6,12 @@ import ProtectedRoute from './components/ProtectedRoute';
 // Pages
 import LoginPage from './pages/LoginPage';
 import AdminLayout from './pages/admin/AdminLayout';
-import AdminDashboard from './pages/admin/AdminDashboard';
 import CompetitionManager from './pages/admin/CompetitionManager';
 import ContestantManager from './pages/admin/ContestantManager';
 import JudgeManager from './pages/admin/JudgeManager';
 import RoundManager from './pages/admin/RoundManager';
 import RealtimeScoreboard from './pages/admin/RealtimeScoreboard';
+import BackupRestoreManager from './pages/admin/BackupRestoreManager';
 import JudgeLayout from './pages/judge/JudgeLayout';
 import SelectCompetition from './pages/judge/SelectCompetition';
 import ContestantList from './pages/judge/ContestantList';
@@ -39,6 +39,7 @@ function App() {
             <Route path="judges" element={<JudgeManager />} />
             <Route path="rounds" element={<RoundManager />} />
             <Route path="scoreboard" element={<RealtimeScoreboard />} />
+            <Route path="backup" element={<BackupRestoreManager />} />
           </Route>
 
           {/* Judge Routes */}

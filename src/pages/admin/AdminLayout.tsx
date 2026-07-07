@@ -9,6 +9,7 @@ const navItems = [
   { path: '/admin/contestants', label: 'ผู้เข้าแข่งขัน', icon: 'fas fa-users' },
   { path: '/admin/judges', label: 'กรรมการ', icon: 'fas fa-gavel' },
   { path: '/admin/rounds', label: 'จัดการรอบการประกวด', icon: 'fas fa-sync-alt' },
+  { path: '/admin/backup', label: 'สำรองและกู้คืนข้อมูล', icon: 'fas fa-database' },
 ];
 
 const AdminLayout = () => {
@@ -56,7 +57,7 @@ const AdminLayout = () => {
           </li>
           <li className="nav-item d-none d-sm-inline-block">
             <span className="nav-link font-weight-bold text-dark mb-0">
-              Freshy Pageant Scoring System
+              S-TECH FRESHMEN AND BRAND AMBRASSADOR
             </span>
           </li>
         </ul>
@@ -67,14 +68,16 @@ const AdminLayout = () => {
       {/* Main Sidebar Container */}
       <aside className="main-sidebar sidebar-dark-primary elevation-4" style={{ minHeight: 'calc(100vh - 56px)' }}>
         {/* Brand Logo */}
-        <a href="#" className="brand-link d-flex align-items-center" onClick={e => e.preventDefault()}>
+        <a href="#" className="brand-link d-flex align-items-center" onClick={e => e.preventDefault()} style={{ height: 'auto', minHeight: '56px', padding: '10px 15px' }}>
           <img
             src="/LOGO_SERIRACHA_COLOR_TRANERENT (1).png"
             alt="College Logo"
             className="brand-image img-circle elevation-3 mr-2"
             style={{ width: '33px', height: '33px', objectFit: 'contain', backgroundColor: 'white', padding: '2px', marginLeft: '12px' }}
           />
-          <span className="brand-text font-weight-bold text-white tracking-wide">Freshy ดาวเดือน</span>
+          <span className="brand-text font-weight-bold text-white tracking-wide" style={{ fontSize: '11px', whiteSpace: 'normal', lineHeight: '1.2' }}>
+            S-TECH FRESHMEN AND<br />BRAND AMBRASSADOR
+          </span>
         </a>
 
         {/* Sidebar */}
@@ -141,7 +144,7 @@ const AdminLayout = () => {
 
       {/* Footer */}
       <footer className="main-footer text-xs py-3 px-4 border-top bg-white">
-        <strong>Copyright &copy; 2026 Freshy Scoring.</strong> All rights reserved.
+        <strong>Copyright &copy; 2026 S-TECH FRESHMEN AND BRAND AMBRASSADOR.</strong> All rights reserved.
         <div className="float-right d-none d-sm-inline-block">
           <b>AdminLTE Theme</b> v3.2.0
         </div>

@@ -59,6 +59,11 @@ const ContestantList = () => {
             <h4 className="font-weight-black text-primary mb-1 m-0" style={{ fontSize: '18px' }}>
               {competition?.name}
             </h4>
+            {currentRoundInfo && (
+              <small className="text-muted font-weight-bold">
+                ประเมินแล้ว {scoredIds.size}/{contestants.length} คน ({scorePercent}%)
+              </small>
+            )}
           </div>
         </div>
 

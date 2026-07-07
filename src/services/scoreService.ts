@@ -1,6 +1,5 @@
 import {
   collection,
-  doc,
   addDoc,
   getDocs,
   onSnapshot,
@@ -13,7 +12,7 @@ import type { Score } from '../types';
 
 const COLLECTION = 'scores';
 
-export const submitScore = async (data: Omit<Score, 'id'>) => {
+export const submitScore = async (data: Omit<Score, 'id' | 'submittedAt'>) => {
   // ตรวจสอบว่ากรรมการคนนี้ให้คะแนนผู้เข้าแข่งคนนี้ในรอบนี้แล้วหรือยัง
   const existing = await checkExistingScore(
     data.judgeId,

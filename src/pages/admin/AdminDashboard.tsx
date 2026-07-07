@@ -54,7 +54,7 @@ const AdminDashboard = () => {
       {/* Content Header */}
       <div className="content-header p-0 mb-3 border-bottom pb-2">
         <h1 className="m-0 text-dark font-weight-bold" style={{ fontSize: '24px' }}>Dashboard</h1>
-        <p className="text-muted text-sm mb-0">ภาพรวมการใช้งานและสถิติของระบบให้คะแนนประกวด Freshy ดาวเดือน</p>
+        <p className="text-muted text-sm mb-0">ภาพรวมการใช้งานและสถิติของระบบให้คะแนนประกวด S-TECH FRESHMEN AND BRAND AMBRASSADOR</p>
       </div>
 
       {/* AdminLTE Small Boxes Grid */}

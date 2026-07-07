@@ -160,7 +160,7 @@ const CompetitionManager = () => {
   const removeRound = (idx: number) => setRounds(rounds.filter((_, i) => i !== idx));
   const updateRound = (idx: number, field: keyof Round, value: string | number) => {
     const updated = [...rounds];
-    (updated[idx] as Record<string, unknown>)[field] = value;
+    (updated[idx] as unknown as Record<string, unknown>)[field] = value;
     setRounds(updated);
   };
   const addRoundCriterion = (roundIdx: number) => {
@@ -189,7 +189,7 @@ const CompetitionManager = () => {
     const updated = [...rounds];
     const r = updated[roundIdx];
     const currentCriteria = [...(r.criteria || [])];
-    (currentCriteria[critIdx] as Record<string, unknown>)[field] = value;
+    (currentCriteria[critIdx] as unknown as Record<string, unknown>)[field] = value;
     updated[roundIdx] = {
       ...r,
       criteria: currentCriteria

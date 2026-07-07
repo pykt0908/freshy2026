@@ -6,7 +6,6 @@ import {
   onSnapshot,
   query,
   where,
-  orderBy,
   getDocs,
 } from 'firebase/firestore';
 import type { Unsubscribe } from 'firebase/firestore';

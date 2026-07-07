@@ -47,14 +47,13 @@ const LoginPage = () => {
     <div className="login-box">
       {/* Login Logo */}
       <div className="login-logo text-center mb-3">
-        <a href="#" className="h1 font-weight-bold text-dark d-flex align-items-center justify-content-center" onClick={(e) => e.preventDefault()} style={{ gap: '10px' }}>
+        <a href="#" className="d-flex justify-content-center" onClick={(e) => e.preventDefault()}>
           <img
             src="/LOGO_SERIRACHA_COLOR_TRANERENT (1).png"
             alt="College Logo"
-            className="img-circle border shadow-sm"
-            style={{ width: '45px', height: '45px', objectFit: 'contain', backgroundColor: 'white', padding: '2px' }}
+            className="img-circle border shadow mx-auto"
+            style={{ width: '95px', height: '95px', objectFit: 'contain', backgroundColor: 'white', padding: '4px' }}
           />
-          <b>Freshy</b> ดาวเดือน
         </a>
       </div>
 

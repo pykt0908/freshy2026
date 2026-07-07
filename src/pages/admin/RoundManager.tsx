@@ -174,9 +174,17 @@ const RoundManager = () => {
                   </span>
                 </h4>
                 <p className="text-muted text-xs mb-0">
-                  เกณฑ์ผ่านรอบปกติ: คัดกรอง Top {currentRoundInfo?.topN} คนแรก · จำนวนกรรมการคัดสิน {judgeCount} คน · ให้คะแนนแล้ว {totalScored}/{totalPossibleScores} ใบผลลัพธ์
+                  เกณฑ์ผ่านรอบปกติ: คัดกรอง Top {currentRoundInfo?.topN} คนแรก · จำนวนกรรมการคัดสิน {judgeCount} คน · ให้คะแนนแล้ว {totalScored}/{totalPossibleScores} ใบผลลัพธ์ ({scorePercent}%)
                 </p>
               </div>
+              {currentRoundInfo?.status !== 'completed' && (
+                <button
+                  onClick={handleAdvanceRound}
+                  className="btn btn-success btn-sm font-weight-bold shadow-sm"
+                >
+                  <i className="fas fa-forward mr-1"></i> ประกาศผลและเลื่อนรอบประกวด ({scorePercent}%)
+                </button>
+              )}
             </div>
           </div>
 

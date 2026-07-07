@@ -4,7 +4,7 @@ import { useAuth } from '../../contexts/AuthContext';
 import { subscribeContestantsByCompetition } from '../../services/contestantService';
 import { subscribeCompetitions } from '../../services/competitionService';
 import { submitScore, getScoresByJudgeAndCompetition } from '../../services/scoreService';
-import type { Competition, Contestant, Score } from '../../types';
+import type { Competition, Contestant } from '../../types';
 import toast from 'react-hot-toast';
 
 const ScoringForm = () => {
